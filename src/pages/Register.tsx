@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft, Building, Car, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const Register = () => {
   const [searchParams] = useSearchParams();
-  const defaultType = searchParams.get('type') || 'building-owner';
+  const defaultType = searchParams.get('type') || 'building_owner';
   
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,6 +26,14 @@ const Register = () => {
   });
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signUp, user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,15 +49,43 @@ const Register = () => {
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Registration Successful",
-        description: "Welcome to Adora! Please check your email to verify your account.",
+    try {
+      const roleMapping = {
+        'building-owner': 'building_owner',
+        'vehicle-owner': 'vehicle_owner',
+        'brand-company': 'brand_company',
+        'brand': 'brand_company'
+      };
+
+      const { error } = await signUp(formData.email, formData.password, {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        role: roleMapping[userType as keyof typeof roleMapping] || 'building_owner',
+        phone: formData.phone
       });
-      navigate("/dashboard");
-    }, 1500);
+
+      if (error) {
+        toast({
+          title: "Registration Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Registration Successful",
+          description: "Welcome to Adora! Please check your email to verify your account.",
+        });
+        navigate("/login");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,12 +97,14 @@ const Register = () => {
 
   const getUserTypeInfo = (type: string) => {
     switch (type) {
+      case 'building_owner':
       case 'building-owner':
         return {
           icon: Building,
           title: 'Building Owner',
           description: 'List your building spaces for advertising'
         };
+      case 'vehicle_owner':
       case 'vehicle-owner':
         return {
           icon: Car,
