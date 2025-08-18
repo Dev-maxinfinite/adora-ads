@@ -134,7 +134,6 @@ const SearchSpaces = () => {
                     <SelectValue placeholder="Select State" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All States</SelectItem>
                     {indianStates.map((state) => (
                       <SelectItem key={state} value={state}>
                         {state}
@@ -148,7 +147,6 @@ const SearchSpaces = () => {
                     <SelectValue placeholder="Space Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Types</SelectItem>
                     <SelectItem value="building">Building</SelectItem>
                     <SelectItem value="vehicle">Vehicle</SelectItem>
                   </SelectContent>
@@ -159,7 +157,6 @@ const SearchSpaces = () => {
                     <SelectValue placeholder="Price Range" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any Price</SelectItem>
                     <SelectItem value="0-10000">₹0 - ₹10,000</SelectItem>
                     <SelectItem value="10000-25000">₹10,000 - ₹25,000</SelectItem>
                     <SelectItem value="25000-50000">₹25,000 - ₹50,000</SelectItem>
